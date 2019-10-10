@@ -2,7 +2,6 @@
 ## Début du chargement des librairies ##
 ########################################
 
-
 library(lubridate)
 library(plyr)
 library(nlme)
@@ -11,7 +10,6 @@ library(lattice)
 library(ggplot2)
 library(sf)
 library(predictmeans)
-library(sme)
 library(influence.ME)
 library(corrplot)
 library(rccdates)
@@ -40,11 +38,6 @@ library(usedist)
 library(readr)
 library(RColorBrewer)
 library(ggthemes)
-library(kml)
-library(mclust)
-library(fpc)
-library(mgcv)
-library(brms)
 
 ########################################
 ## Fin du chargement des librairies   ##
@@ -98,7 +91,7 @@ sol_chimique$C.org2em = as.numeric(as.character(sol_chimique$C.orga..g.100g.MS10
 sol_chimique$C.org2em3 = as.numeric(as.character(sol_chimique$C.orga..g.100g.MS105.))
 
 for (i in 1 : length(sol_chimique[,1])){
-if ( is.na(sol_chimique$C.org1er[i])) {sol_chimique$C.org1er[i] = 0}
+  if ( is.na(sol_chimique$C.org1er[i])) {sol_chimique$C.org1er[i] = 0}
   if ( is.na(sol_chimique$C.org2em[i])) {sol_chimique$C.org2em[i] = 0}
   if ( is.na(sol_chimique$C.org2em3[i])) {sol_chimique$C.org2em3[i] = 0}
 }
@@ -149,17 +142,17 @@ sol_chimique$Code_site = as.character(sol_chimique$Code_site)
 
 for (i in 1:length(sol_chimique[,1])){
   if(sol_chimique$Code_site[i] == "LYC" | sol_chimique$Code_site[i] == "0-LYC" )
-                                        { sol_chimique$Code_site[i] = "0-LYC"
-                                          sol_chimique$SOL[i] = "arénosol"}
+  { sol_chimique$Code_site[i] = "0-LYC"
+  sol_chimique$SOL[i] = "arénosol"}
   if(sol_chimique$Code_site[i] == "SIC" | sol_chimique$Code_site[i] == "1-SIC" )
-                                        { sol_chimique$Code_site[i] = "1-SIC"
-                                          sol_chimique$SOL[i] = "andosol" }
+  { sol_chimique$Code_site[i] = "1-SIC"
+  sol_chimique$SOL[i] = "andosol" }
   if(sol_chimique$Code_site[i] == "SED" | sol_chimique$Code_site[i] == "2-SED" )
-                                        { sol_chimique$Code_site[i] = "2-SED" 
-                                          sol_chimique$SOL[i] = "andosol"}
+  { sol_chimique$Code_site[i] = "2-SED" 
+  sol_chimique$SOL[i] = "andosol"}
   if(sol_chimique$Code_site[i] == "MAR" | sol_chimique$Code_site[i] == "3-MAR" )
-                                        { sol_chimique$Code_site[i] = "3-MAR" 
-                                          sol_chimique$SOL[i] = "andosol"}
+  { sol_chimique$Code_site[i] = "3-MAR" 
+  sol_chimique$SOL[i] = "andosol"}
 }
 
 sol_chimique$Code_site = as.factor(sol_chimique$Code_site)
@@ -212,7 +205,7 @@ Horizon = cbind(as.character(Horizon_1),
 
 sol_chimique$horizon_num = as.numeric(sol_chimique$horizon)
 sol_chimique$trai_num = as.numeric(substr(sol_chimique$traitement, 1, 1))
- 
+
 # Maintenans on stock la vieille base de donnée et on garde dans sol_chimique tous le reste
 
 sol_chimique_old = sol_chimique
@@ -221,31 +214,39 @@ sol_chimique_new = sol_chimique
 
 for (i in 1:length(sol_chimique[,1])){
   for (j in levels(sol_chimique$Code_site)){
-  if (sol_chimique$Code_site[i] != j & Horizon[match(j, levels(sol_chimique$Code_site))] != as.character(sol_chimique$horizon[i])){
-    sol_chimique_new[i,] = NA
-  } 
+    if (sol_chimique$Code_site[i] != j & Horizon[match(j, levels(sol_chimique$Code_site))] != as.character(sol_chimique$horizon[i])){
+      sol_chimique_new[i,] = NA
+    } 
   }
 }
 
 naa = list()
 
 for (i in 1:length(sol_chimique_new[,1])){
-if (is.na(sol_chimique_new$Code_site[i]))
+  if (is.na(sol_chimique_new$Code_site[i]))
   { 
-  naa = c(naa, i)
-}
+    naa = c(naa, i)
+  }
 }
 
+sol_chimique_new$pH.eau = as.numeric(as.character(sol_chimique_new$pH.eau))
+sol_chimique_new$pH.KCL = as.numeric(as.character(sol_chimique_new$pH.KCL))
 sol_chimique_new = sol_chimique_new[-as.numeric(naa),]
+sol_chimique_new = sol_chimique_new[-c(591,595,600),]
+sol_chimique_new$traitement = as.factor(sol_chimique_new$traitement)
 
 #####
 ## On voit bien que la conversion ne peut pas fonctionner
 #####
 
-xyplot(C.org ~ Date3 | Code_site, data = sol_chimique_new[sol_chimique_new$traitement == "0-Temoin",], typ = c("p", "r"))
-xyplot(C.orgNC ~ Date3 | Code_site, data = sol_chimique_new[sol_chimique_new$traitement == "0-Temoin",], typ = c("p", "r"))
+xyplot(C.org ~ Date3 | traitement, data = sol_chimique_new, typ = c("p", "r"), scales = "free")
+plot = dotplot(C.orgNC ~ (as.factor(Date2))| traitement,
+               data = sol_chimique_new[sol_chimique_new$Code_site == "1-SIC",]
+               , typ = c("p", "r"), aspect = "fill", as.table = TRUE, 
+               main = "pH.KCL evolution through experiment at SIC")
 
-sol_chimique = sol_chimique_new 
+print(plot)
+sol_chimique = sol_chimique_new
 
 ############################################
 ## Transformation des types de variables  ##
@@ -256,7 +257,7 @@ compoflo$parcelle = as.factor(compoflo$parcelle)
 parcelle$Parcelle = as.factor(parcelle$Parcelle)
 sol_chimique$traitement = as.factor(sol_chimique$traitement)
 sol_chimique$CN = (sol_chimique$C.org) / (sol_chimique$N.tot)
-sol_chimique_new = sol_chimique_new[-c(1011, 1015, 1020),]
+
 sol_chimique_LYC = sol_chimique[sol_chimique$Code_site == "0-LYC",]
 sol_chimique_SIC = sol_chimique[sol_chimique$Code_site == "1-SIC",]
 sol_chimique_MAR = sol_chimique[sol_chimique$Code_site == "3-MAR",]
@@ -273,6 +274,7 @@ sol_chimique_SED_new = sol_chimique_new[sol_chimique_new$Code_site == "2-SED",]
 
 write.csv(sol_chimique, file = "DATAFRAME_sol_chimique.csv")
 write.csv(sol_chimique_new, file = "DATAFRAME_sol_chimique_new.csv")
+
 
 sol_chimique = read.csv("DATAFRAME_sol_chimique.csv", sep =",")
 sol_chimique_new = read.csv("DATAFRAME_sol_chimique_new.csv", sep = ",")
@@ -303,7 +305,7 @@ for (i in levels(as.factor(sol_chimique_LYC_new$Date2)))
           Moyenne_LYC[match(j, levels(as.factor(sol_chimique_LYC_new$traitement))), 
                       8,
                       match(i, levels(as.factor(sol_chimique_LYC_new$Date2)))] = as.numeric(substr((sol_chimique_LYC_new$traitement)[k],1,1))
-        
+          
         }
       }
     }
@@ -332,7 +334,7 @@ for (j in 1:length(data_frame_LYC[,1])){
 for(i in 1:length(data_frame_LYC[,1])){
   data_frame_LYC$err_initiale[j] = sd(data_frame_LYC$V4/data_frame_LYC$initiale)
   
-  }
+}
 
 write.csv(data_frame_LYC, "data_frame_corgNC_LYC.csv")
 
@@ -403,15 +405,15 @@ data_frame_SIC = as.data.frame(rbind(Moyenne_SIC[,,1],Moyenne_SIC[,,2],Moyenne_S
                                      Moyenne_SIC[,,11],Moyenne_SIC[,,12],Moyenne_SIC[,,13],Moyenne_SIC[,,14]))
 
 for (j in 1:length(data_frame_SIC[,1])){
-for (i in 0:9){
-if (data_frame_SIC$V8[j] == i)
-data_frame_SIC$initiale[j] = data_frame_SIC$V4[i+1]
-data_frame_SIC$err_initiale[j] = data_frame_SIC$V5[i+1]
-}
+  for (i in 0:9){
+    if (data_frame_SIC$V8[j] == i)
+      data_frame_SIC$initiale[j] = data_frame_SIC$V4[i+1]
+    data_frame_SIC$err_initiale[j] = data_frame_SIC$V5[i+1]
+  }
 }
 
 for(i in 1:length(data_frame_SIC[,1])){
-data_frame_SIC$err_initiale[j] = sd(data_frame_SIC$V4/data_frame_SIC$initiale)
+  data_frame_SIC$err_initiale[j] = sd(data_frame_SIC$V4/data_frame_SIC$initiale)
 }
 
 write.csv(data_frame_SIC, "data_frame_corgNC_SIC.csv")
@@ -430,7 +432,7 @@ ggplot(data_frame_SIC, aes(x = V7, y = 100*(V4/initiale-1)))+
   geom_errorbar( aes(x = V7, ymax = 100*(V4/initiale + sqrt((V5/V4)^2+(err_initiale/initiale)^2)-1),
                      ymin = 100*(V4/initiale - sqrt((V5/V4)^2+(err_initiale/initiale)^2)-1)))+
   geom_point()+facet_wrap(~ V8, ncol = 5)+theme_bw()+ geom_hline(yintercept=1, 
-                                                       color = "red", size=1) +
+                                                                 color = "red", size=1) +
   ggtitle("Evolution of carbon concentration in % for SIC") +
   xlab("Date") + ylab("Carbon / initiale")
 
@@ -503,7 +505,7 @@ ggplot(data_frame_SED, aes(x = V7, y = V4))+
   geom_errorbar( aes(x = V7, ymax = V4 + V5, ymin = V4 - V5))+
   scale_x_discrete(limits = seq(from = 2004, to = 2012, by = 2)) +
   geom_point()+facet_wrap(~ V8, ncol = 5)+theme_bw()+ geom_hline(aes(yintercept=initiale), 
-                                                       color = "red", size=1)+
+                                                                 color = "red", size=1)+
   ggtitle("Evolution of carbon concentration flat for SED") +
   xlab("Date") + ylab("Carbon")
 
@@ -515,7 +517,7 @@ ggplot(data_frame_SED, aes(x = V7, y = 100*(V4/initiale-1)))+
   geom_errorbar( aes(x = V7, ymax = 100*(V4/initiale + sqrt((V5/V4)^2+(err_initiale/initiale)^2)-1),
                      ymin = 100*(V4/initiale - sqrt((V5/V4)^2+(err_initiale/initiale)^2)-1)))+
   geom_point()+facet_wrap(~ V8, ncol = 5 )+theme_bw()+ geom_hline(yintercept=1, 
-                                                       color = "red", size=1)+
+                                                                  color = "red", size=1)+
   ggtitle("Evolution of carbon concentration in % for SED") +
   xlab("Date") + ylab("Carbon / initiale")
 
@@ -626,32 +628,6 @@ for (i in 1:10){
 
 Moyenne_LYC
 
-############################################
-# Pour le moment les données en sont là et #
-# sont chargeables directement             #
-############################################
-
-
-setwd("C:/Users/Louis-Axel/Documents/")
-
-sol_chimique = read.csv("DATAFRAME_sol_chimique.csv", sep =",")
-sol_chimique_new = read.csv("DATAFRAME_sol_chimique_new.csv", sep = ",")
-
-sol_chimique_LYC = sol_chimique[sol_chimique$Code_site == "0-LYC",]
-sol_chimique_SIC = sol_chimique[sol_chimique$Code_site == "1-SIC",]
-sol_chimique_MAR = sol_chimique[sol_chimique$Code_site == "3-MAR",]
-sol_chimique_SED = sol_chimique[sol_chimique$Code_site == "2-SED",]
-
-sol_chimique_LYC_new = sol_chimique_new[sol_chimique_new$Code_site == "0-LYC",]
-sol_chimique_SIC_new = sol_chimique_new[sol_chimique_new$Code_site == "1-SIC",]
-sol_chimique_MAR_new = sol_chimique_new[sol_chimique_new$Code_site == "3-MAR",]
-sol_chimique_SED_new = sol_chimique_new[sol_chimique_new$Code_site == "2-SED",]
-
-data_frame_LYC = read.csv("data_frame_corgNC_LYC.csv")
-data_frame_SIC = read.csv("data_frame_corgNC_SIC.csv")
-data_frame_SED = read.csv("data_frame_corgNC_SED.csv")
-data_frame_MAR = read.csv("data_frame_corgNC_MAR.csv")
-
 #############################################
 # Exemple type de réalisation de boxplot   ##
 #############################################
@@ -661,99 +637,190 @@ xyplot(as.numeric(as.character(pH.eau)) ~ Date_prelevement | traitement, data = 
 xyplot(as.numeric(as.character(pH.eau)) ~ Date_prelevement | traitement, data = sol_chimique_SIC, typ = c("p", "r"))
 xyplot(as.numeric(as.character(pH.eau)) ~ Date_prelevement | traitement, data = sol_chimique_MAR, typ = c("p", "r"))
 
+xyplot(C.orgNC ~ Date2 | traitement, data = sol_chimique_MAR, typ = c("p", "r"))
+xyplot(C.orgNC ~ Date3 | traitement, data = sol_chimique_SED, typ = c("p", "r"))
+xyplot(C.org ~ Date3 | traitement, data = sol_chimique_SIC, typ = c("p", "r"))
+xyplot(C.org ~ Date3 | traitement, data = sol_chimique_MAR, typ = c("p", "r"))
+
+xyplot(C.org ~ pH | traitement, data = sol_chimique_LYC, typ = c("p", "r"))
+xyplot(C.org ~ pH | traitement, data = sol_chimique_SED, typ = c("p", "r"))
+xyplot(C.org ~ pH | traitement, data = sol_chimique_SIC, typ = c("p", "r"))
+xyplot(C.org ~ pH | traitement, data = sol_chimique_MAR, typ = c("p", "r"))
+
+barchart(N.tot ~ Date2 | traitement, data = sol_chimique_LYC, typ = c("p", "r"))
+barchart(N.tot ~ Date2 | traitement, data = sol_chimique_SED, typ = c("p", "r"))
+barchart(N.tot ~ Date2 | traitement, data = sol_chimique_SIC, typ = c("p", "r"))
+barchart(N.tot ~ Date2 | traitement, data = sol_chimique_MAR, typ = c("p", "r"))
+
+barchart(P ~ Date2 | traitement, data = sol_chimique_LYC, typ = c("p", "r"))
+barchart(P ~ Date2 | traitement, data = sol_chimique_SED, typ = c("p", "r"))
+barchart(P ~ Date2 | traitement, data = sol_chimique_SIC, typ = c("p", "r"))
+barchart(P ~ Date2 | traitement, data = sol_chimique_MAR, typ = c("p", "r"))
+
 #####################################
 ## Ici nous commencons les modèles ##
 #####################################
 
-model_LYC = lme((sqrt(C.orgNC)) ~ traitement, random =~ Date3|traitement,data = sol_chimique_LYC_new,  method = "ML") 
-summary(model_LYC)
-plot(model_LYC)
-hist(resid(model_LYC))
-plot(model_LYC, Date3 ~ resid(.))
-plot(model_LYC, sqrt((C.orgNC)) ~ fitted(.) | Date3, abline = c(0,1), id = 0.025, idResType = "pearson")
-plot(model_LYC, sqrt((C.orgNC)) ~ fitted(.) | traitement, abline = c(0,1), id = 0.025, idResType = "pearson")
-plot.lme(model_LYC, sqrt((C.orgNC)) ~ fitted(.) | Parcelle, abline = c(0,1), id = 0.025)
-plot(model_LYC, (fitted(.)^2)~ as.numeric(Date3) | traitement)
 
-## Note : Ici un simple modèle mixte sur la racine carré avec unb effet mixte sur le traitement en fonction de la data 
-
-sol_chimique_SIC_new$traitement = as.factor(sol_chimique_SIC_new$traitement)
-model_SIC = lme(sqrt(C.orgNC) ~ traitement , random =~ Date3|Parcelle, data = sol_chimique_SIC_new, method = "ML") 
-r = glht(model_SIC, linfct = mcp(traitement = "Tukey"), test = adjusted("holm"))
-tuk.cld <- cld(r, by = NULL, covar = F)
-conf = confint(r)
-old.par <- par(mai=c(1,1,1.5,1), no.readonly = F)
-col = brewer.pal(n = 10, name = "Spectral")
-plot(tuk.cld, col = col, type = "response")
-rr = emmeans(model_SIC, list(pairwise ~ traitement), adjust = "tukey")
-plot(rr)
-
-## Ici on fait la même mais un test de Tukey supplémentaire est effectué
-
-summary(model_SIC)
-plot(model_SIC)
-hist(resid(model_SIC))
-plot(model_SIC, Date3 ~ fitted(.))
-plot(model_SIC, sqrt((C.orgNC)) ~ fitted(.) | Date3, abline = c(0,1), id = 0.025, idResType = "pearson")
-plot(model_SIC, sqrt((C.orgNC)) ~ fitted(.) | traitement, abline = c(0,1), id = 0.025, idResType = "pearson")
-plot.lme(model_SIC, sqrt((C.orgNC)) ~ fitted(.) | Parcelle, abline = c(0,1), id = 0.025)
-plot(model_SIC, (fitted(.)^2) ~ as.numeric(Date3) | traitement)
 
 ## Model total 
-## Ici on va inclure les sites en tant qie facteurs dans notre analyse
-
 sol_chimique_new$Date3 = as.factor(sol_chimique_new$Date3)
 sol_chimique_new$Date2 = as.factor(sol_chimique_new$Date2)
 sol_chimique_new$date_test = as.numeric(sol_chimique_new$date_test)
 
-sol_chimique_SIC_new$Date2 = as.factor(sol_chimique_SIC_new$Date2)
+sol_chimique_new$Date2 = as.factor(sol_chimique_new$Date2)
 
-model_Mtot = lme(log(C.orgNC)~ Date2 * traitement, 
-                 random =~ 1|Parcelle, data = sol_chimique_SIC_new) 
-AIC(model_Mtot) 
-
-model_Mtot = lme(log(C.orgNC)~ traitement * Date2, 
-                 random =~ 1|Code_site, data = sol_chimique_new) 
-AIC(model_Mtot)
-
-model_Mtot2 = lmer(log(C.orgNC) ~ 1 + traitement * (Code_site)  *
-                     ((date_test)|Code_site),
+model_Mtot_a = lmer(log(C.orgNC) ~  traitement * (Code_site) * date_test +
+                     (Code_site | date_test),
                    data = sol_chimique_new)
 
-AIC(model_Mtot2)
+plot(model_Mtot_a)
+summary(model_Mtot_a)
+AIC(model_Mtot_a) # -1976
 
-model_Mtot3 = lmer(log(C.orgNC) ~   traitement   +
-                     (bs(date_test, 3) | Code_site),
+sol_chimique_new$fitted_a = exp(fitted(model_Mtot_a))
+
+#####
+
+ggplot_SIC = sol_chimique_new[sol_chimique_new$Code_site == "1-SIC",]
+
+formula = y ~x 
+ggplot(ggplot_SIC, aes(x = date_test, y = (C.orgNC),
+                       group = traitement))+
+  scale_y_continuous(limits = c(min(ggplot_SIC$C.orgNC), 18
+                                  ))+
+   geom_point(aes(col = traitement))+
+  geom_smooth(method = lm ,formula = y ~ x, se = FALSE, 
+              level = 0.95)+
+  facet_wrap(~traitement)+ 
+  stat_cor(label.y = 16)+
+  geom_smooth(aes(col = traitement), span = 0.5)
+
+ggplot(ggplot_SIC, aes(x = date_test, y = (fitted),
+                       group = traitement))+
+  scale_y_continuous(limits = c(min(ggplot_SIC$fitted), 18
+  ))+
+  geom_point(aes(col = traitement))+
+  geom_smooth(method = lm ,formula = y ~ x, se = FALSE, 
+              level = 0.95)+
+  facet_wrap(~traitement)+ 
+  stat_cor(label.y = 16)+
+  geom_smooth(aes(col = traitement), span = 0.5)
+
+ggplot(ggplot_SIC, aes(x = date_test, y = C.orgNC - (fitted),
+                       group = traitement))+
+  geom_point(aes(col = traitement))+
+  geom_smooth(method = lm ,formula = y ~ x, se = FALSE, 
+              level = 0.95)+
+  facet_wrap(~traitement)+ 
+  stat_cor(label.y = 5)+
+  geom_smooth(aes(col = traitement), span = 0.5)
+
+#####
+
+model_Mtot_b = lmer(log(C.orgNC) ~  traitement * (Code_site) * date_test+
+                     (ns(date_test, 7) | Code_site),
                    data = sol_chimique_new)
 
-model_Mtot4 = lmer(log(C.orgNC) ~     traitement * Code_site +
+AIC(model_Mtot_b) # = - 1857
+plot(model_Mtot_b)
+
+sol_chimique_new$fitted_b = exp(fitted(model_Mtot_b))
+
+#####
+
+ggplot_SIC = sol_chimique_new[sol_chimique_new$Code_site == "1-SIC",]
+
+ggplot(ggplot_SIC, aes(x = date_test, y = (C.orgNC),
+                       group = traitement))+
+  scale_y_continuous(limits = c(min(ggplot_SIC$C.orgNC), 18
+  ))+
+  geom_point(aes(col = traitement))+
+  geom_smooth(method = lm ,formula = y ~ x, se = FALSE, 
+              level = 0.95)+
+  facet_wrap(~traitement)+ 
+  stat_cor(label.y = 16)+
+  geom_smooth(aes(col = traitement), span = 0.5)
+
+
+ggplot(ggplot_SIC, aes(x = date_test, y = C.orgNC - (fitted),
+                       group = traitement))+
+  geom_point(aes(col = traitement))+
+  geom_smooth(method = lm ,formula = y ~ x, se = FALSE, 
+              level = 0.95)+
+  facet_wrap(~traitement)+ 
+  stat_cor(label.y = 5)+
+  geom_smooth(aes(col = traitement), span = 0.5)
+
+#####
+
+model_Mtot_c = lmer(log(C.orgNC) ~     traitement * Code_site +
                      (bs(date_test, 3) | (Code_site)) *
                      (bs(date_test, 3) | (traitement)) ,
                    data = sol_chimique_new)
-                   
-## Utilisation du modèle mixte bayésien 
-  
-aa = brm(data = sol_chimique_new, log(C.orgNC) ~ traitement * Code_site +
-             (date_test | traitement) +(date_test | traitement) , 
-         core = 8, chain = 8, iter = 2000)
+
+AIC(model_Mtot_c) ## -1939
+plot(model_Mtot_c)
+
+#####
+
+sol_chimique_new$fitted_c = exp(fitted(model_Mtot_c))
+
+ggplot_SIC = sol_chimique_new[sol_chimique_new$Code_site == "1-SIC",]
+
+ggplot(ggplot_SIC, aes(x = date_test, y = (C.orgNC),
+                       group = traitement))+
+  scale_y_continuous(limits = c(min(ggplot_SIC$C.orgNC), 18
+  ))+
+  geom_point(aes(col = traitement))+
+  geom_smooth(method = lm ,formula = y ~ x, se = FALSE, 
+              level = 0.95)+
+  facet_wrap(~traitement)+ 
+  stat_cor(label.y = 16)+
+  geom_smooth(aes(col = traitement), span = 0.5)
+
+ggplot(ggplot_SIC, aes(x = date_test, y = C.orgNC - (fitted),
+                       group = traitement))+
+  geom_point(aes(col = traitement))+
+  geom_smooth(method = lm ,formula = y ~ x, se = FALSE, 
+              level = 0.95)+
+  facet_wrap(~traitement)+ 
+  stat_cor(label.y = 5)+
+  geom_smooth(aes(col = traitement), span = 0.5)
+
+#####
+
+bprior1 <-  prior(cauchy(0,2))
+aa = brm( log(C.orgNC) ~  traitement * Code_site + (date_test|Code_site) , data = sol_chimique_new,
+          chain = 40, core = 4, iter = 2000,   prior = c(prior(normal(0,2), class= Intercept),
+                                                         prior(cauchy(0,1), class = sd),
+                                                         prior(cauchy(0,1), class = sigma)))
+
+## 4 pour 1000
+## 1h20 pour tout
 
 summary(aa)
-
+AIC(aa)
 newdata = data.frame(traitement = levels(sol_chimique_new$traitement),
                      Code_site = (sol_chimique_new$Code_site))
+
+sol_chimique_new$fitted_d = exp(fit[-c(591,595,600),1])
+
+ggplot_SIC = sol_chimique_new[sol_chimique_new$Code_site == "1-SIC",]
+
 fit = fitted(aa,
              newdata = newdata,
              re_formula = NA,
-              summary = T) 
+             summary = T) 
 
 colnames(fit) = c('fit', "se", "lwr", "upr")
 df_plot = cbind(newdata, fit)
-boxplot(df_plot$fit ~ df_plot$traitement)
+boxplot(df_plot$fit ~ df_plot$Code_site)
 
 fit1 = as.data.frame(fitted(aa,
-             newdata = newdata,
-             re_formula = NA,
-             summary = F) )
+                            newdata = newdata,
+                            re_formula = NA,
+                            summary = F) )
 
 colnames(fit1) = newdata$traitement
 
@@ -774,23 +841,101 @@ quantile(a_vs_b, probs = c(.5, .025, .975))
 
 pp_check(aa)
 marginal_effects(aa)
-plot(aa, pars = c("traitement", "Code_site")) 
-plot(marginal_effects(aa, effects = "Code_site:traitement"))
+plot(aa, pars = c("traitement")) 
 
-## Fin du modèle mixte bayésien
+#####
+ggplot_SIC = sol_chimique_new[sol_chimique_new$Code_site == "1-SIC",]
 
-## Modèle mixtes avec spline cubique automatique : marche bien. Sans doute le même code que LePabic
+ggplot(ggplot_SIC, aes(x = date_test, y = (fitted_e),
+                       group = traitement))+
+  scale_y_continuous(limits = c(min(ggplot_SIC$C.orgNC), 18
+  ))+
+  geom_point(aes(col = traitement))+
+  geom_smooth(method = lm ,formula = y ~ x, se = FALSE, 
+              level = 0.95)+
+  facet_wrap(~traitement)+ 
+  stat_cor(label.y = 16)+
+  geom_smooth(aes(col = traitement), span = 0.5)
 
-gam.mod = gam(log(C.orgNC) ~  s(trai_num) + (Code_site),
-                   data = sol_chimique_new)
+ggplot(ggplot_SIC, aes(x = date_test, y = C.orgNC - (fitted),
+                       group = traitement))+
+  geom_point(aes(col = traitement))+
+  geom_smooth(method = lm ,formula = y ~ x, se = FALSE, 
+              level = 0.95)+
+  facet_wrap(~traitement)+ 
+  stat_cor(label.y = 5)+
+  geom_smooth(aes(col = traitement), span = 0.5)
+#####
 
+gam.mod = gam(log(C.orgNC) ~  (traitement) * (Code_site) * date_test + s(date_test) ,
+              data = sol_chimique_new)
+
+AIC(gam.mod)
 summary(gam.mod)
-anova(gam.mod)
+plot(gam.mod)
 
-plot(gam.mod$gam,pages=1)
+# 1448 400
+# 1451 600
+
+#####
+sol_chimique_new$fitted_e = exp(fitted(gam.mod))
+
+ggplot_SIC = sol_chimique_new[sol_chimique_new$Code_site == "1-SIC",]
+
+ggplot(ggplot_SIC, aes(x = date_test, y = (fitted),
+                       group = traitement))+
+  scale_y_continuous(limits = c(min(ggplot_SIC$C.orgNC), 18
+  ))+
+  geom_point(aes(col = traitement))+
+  geom_smooth(method = lm ,formula = y ~ x, se = FALSE, 
+              level = 0.95)+
+  facet_wrap(~traitement)+ 
+  stat_cor(label.y = 16)+
+  geom_smooth(aes(col = traitement), span = 0.5)
+
+ggplot(ggplot_SIC, aes(x = date_test, y = C.orgNC - (fitted),
+                       group = traitement))+
+  geom_point(aes(col = traitement))+
+  geom_smooth(method = lm ,formula = y ~ x, se = FALSE, 
+              level = 0.95)+
+  facet_wrap(~traitement)+ 
+  stat_cor(label.y = 5)+
+  geom_smooth(aes(col = traitement), span = 0.5)
+#####
+
+formula(model_Mtot_a)
+formula(model_Mtot_b)
+formula(model_Mtot_c)
+d# bayseian
+e# gam
+
+ggplot(ggplot_SIC, aes(x = date_test))+
+  geom_smooth(aes(y = fitted_a - C.orgNC), col = 'red', span = 0.3)+
+  geom_smooth(aes(y = fitted_b - C.orgNC), col = 'blue', span = 0.3)+
+  geom_smooth(aes(y = fitted_c - C.orgNC), col = 'green', span = 0.3)+
+  geom_smooth(aes(y = fitted_d - C.orgNC), col = 'black', span = 0.3)+
+  geom_smooth(aes(y = exp(fitted_e- C.orgNC)), col = 'orange', span = 0.3)+
+  geom_smooth(aes(y = fitted_f- C.orgNC), col = 'violet', span = 0.3)+
+  facet_wrap(~traitement)
+
+ggplot(ggplot_SIC, aes(x = date_test))+
+  geom_smooth(aes(y = fitted_a), col = 'red', span = 0.3)+
+  geom_smooth(aes(y = fitted_b), col = 'blue', span = 0.3)+
+  geom_smooth(aes(y = fitted_c), col = 'green', span = 0.3)+
+  geom_smooth(aes(y = fitted_d), col = 'black', span = 0.3)+
+  geom_smooth(aes(y = exp(fitted_e)), col = 'orange', span = 0.3)+
+  geom_smooth(aes(y = fitted_f), col = 'violet', span = 0.3)+
+  facet_wrap(~traitement)
+
+
+######
+#########
+#####
+####
+plot(model_Mtot3$gam,pages=1)
 sol_chimique_new$resid.gam.mod <- residuals(gam.mod, type = "pearson")
 sol_chimique_new$fit.gam.mod <- residuals(gam.mod, type = "pearson")
-
+# First I tried this:
 ggplot(data = sol_chimique_new) +
   geom_point(aes(x = date_test, y = resid.gam.mod, group = Code_site, color = Code_site)) + 
   facet_wrap(~traitement)
@@ -803,10 +948,10 @@ sol_chimique_new$resid.gam.mod <- residuals(gam.mod.1, type = "pearson")
 sol_chimique_new$fit.gam.mod <- predict(gam.mod.1, type = "link")
 plot(sol_chimique_new$fit.gam.mod, sol_chimique_new$resid.gam.mod)
 
-summary(gam.mod$lme)
-summary(gam.mod$gam)
-anova(gam.mod$gam) 
-gam.check(gam.mod$gam) 
+summary(model_Mtot3$lme)
+summary(model_Mtot3$gam)
+anova(model_Mtot3$gam) 
+gam.check(model_Mtot3$gam) 
 
 ggplot(data = sol_chimique_new) + geom_line(aes(x = date_test, y = fit.gam.mod, group = Code_site)) + 
   facet_wrap(~traitement)
@@ -816,9 +961,7 @@ plot(Variogram(gam.mod.1$lme, robust = TRUE, data = sol_chimique_new, form = ~da
 
 
 dat <- gamSim(sol_chimique_new$C.orgNC,n=200,scale=2)
-
-## Fin du modèle mixte avec spline cubiques
-  library(splines)
+library(splines)
 
 
 ab = anova(model_Mtot, model_Mtot2, model_Mtot3)
@@ -864,7 +1007,7 @@ tuk.cld <- cld(r, by = NULL, covar = F)
 plot(tuk.cld$x, tuk.cld$lp^3, col = col, ylim = c(0,30))
 e = tuk.cld$mcletters$Letters
 text(sort(unique(tuk.cld$x)), 25, labels = c(e[[1]],e[[2]],e[[3]],e[[4]],e[[5]],
-                               e[[6]],e[[7]],e[[8]],e[[9]],e[[10]]))
+                                             e[[6]],e[[7]],e[[8]],e[[9]],e[[10]]))
 
 rc = lsmeans(model_Mtot3, pairwise ~ traitement)
 
@@ -872,11 +1015,11 @@ plot(rc)
 
 
 mod <- lm(C.orgNC ~ traitement * Code_site + date_test, 
-           data=sol_chimique_new)
+          data=sol_chimique_new)
 
 sol_chimique_new = sol
 fit <- sme(as.data.frame(sol_chimique_new[sol_chimique_new$traitement == "5-Com72",
-                            c("C.orgNC", "traitement", "Code_site")]), lambda.mu=0,lambda.v=0)
+                                          c("C.orgNC", "traitement", "Code_site")]), lambda.mu=0,lambda.v=0)
 
 sol_chimique_Corg$y = (sol_chimique_SIC_new$C.orgNC)
 sol_chimique_Corg$z = (sol_chimique_SIC_new$date_test)
@@ -892,20 +1035,20 @@ fit1s <- lme(log(y) ~  traitement  , data=sol_chimique_Corg,random=list(z=pdIden
 plot(sol_chimique_Corg$z,sol_chimique_Corg$y,pch="o",type="n",main="Spline fits: lme(y ~ time, random=list(all=pdIdent(~Zt-1)))",xlab="time",ylab="y")
 points(sol_chimique_Corg$z,sol_chimique_Corg$y,col=1)
 points(sol_chimique_Corg$z, exp(fitted(fit1s)),col=2)
-                                                                                                                                                                                                                                                
+
 summary(fit1s)
 smSplineEx1$Zt <- smspline(C.orgNC~ Date2, data=sol_chimique_new)
-                           
+
 summary(mod)
 plot(mod)
 anova(mod)
 AIC(mod)
 hist(resid(mod))
 # r = glht(mod, linfct = mcp(traitement = "Tukey"), test = adjusted("holm"))
- tuk.cld <- cld(r, by = NULL, covar = F)
+tuk.cld <- cld(r, by = NULL, covar = F)
 plot(tuk.cld$x, tuk.cld$lp, col = col, ylim = c(0,30)))
- e = tuk.cld$mcletters$Letters
- text(sort(unique(tuk.cld$x)), 25, labels = c(e[[1]],e[[2]],e[[3]],e[[4]],e[[5]],
+e = tuk.cld$mcletters$Letters
+text(sort(unique(tuk.cld$x)), 25, labels = c(e[[1]],e[[2]],e[[3]],e[[4]],e[[5]],
                                              e[[6]],e[[7]],e[[8]],e[[9]],e[[10]]))
 
 sol_chimique_new$fit = exp(fitted(mod))
@@ -1024,13 +1167,13 @@ for (i in 1:length(sol_chimique_ando[,1])) {
   if(sol_chimique_ando$C.org[i] < 7){sol_chimique_ando$C.org[i] = NA}}
 
 sol_chimique$
-
-spp = ggscatter(sol_chimique_ando, x = "date_test", y = "C.org", color = "traitement", 
-               palette = col,  add = "reg.line",        # Color by groups "cyl"
-               size = 1, alpha = 0.7, conf.int = TRUE   ,   facet.by = "traitement",                    # Change point shape by groups "cyl"
-               ellipse = F, 
-               fill = "traitement", cor.coef = F, ellipse.type = "norm"
-) +
+  
+  spp = ggscatter(sol_chimique_ando, x = "date_test", y = "C.org", color = "traitement", 
+                  palette = col,  add = "reg.line",        # Color by groups "cyl"
+                  size = 1, alpha = 0.7, conf.int = TRUE   ,   facet.by = "traitement",                    # Change point shape by groups "cyl"
+                  ellipse = F, 
+                  fill = "traitement", cor.coef = F, ellipse.type = "norm"
+  ) +
   stat_cor(method = "pearson", label.x = 2, label.y = 16) +
   stat_regline_equation(label.x = 2,label.y = 19)
 
@@ -1101,9 +1244,9 @@ sd3 = sd((fitted(flm_all)-fitted(model_all_tr)))
 par(mfrow = c(1,1))
 hist((fitted(flm_all)-fitted(model_all_tr)), prob = T, ylim = c(0,8))
 curve(dnorm(x, m3, sd3), add = T)
-                
+
 qqnorm((fitted(flm_all)-fitted(model_all_tr)))
-       
+
 a = rmse(fitted(flm_all), log(sol_chimique_cor$C.org))
 a1 = rmse(fitted(model_all_tr), log(sol_chimique_cor$C.org))
 print( (1 - a1/a) * 100 )
@@ -1169,7 +1312,7 @@ corrplot(var$cos2, is.corr=FALSE)
 fviz_pca_ind(res.pca,
              geom.ind = c("point","text"), # Montre les points seulement (mais pas le "text"),
              col.ind = sol_chimique$traitement, # colorer by groups
-              addEllipses = T, label = "var", invisible ="none",
+             addEllipses = T, label = "var", invisible ="none",
              legend.title = "Groups",gradient.cols = redmono
 )+
   ggpubr::fill_palette("simpsons")+      # Couleur des individus
@@ -1186,7 +1329,7 @@ fviz_pca_biplot(res.pca,
                 legend.title = list(fill = "Traitement", color = "Traitement"),
                 repel = TRUE        # Evite le chévauchement du texte
 )+
-   ggpubr::fill_palette("simpsons")+      # Couleur des individus
+  ggpubr::fill_palette("simpsons")+      # Couleur des individus
   ggpubr::color_palette("simpsons")   
 
 sol_chimique_cor$ratio[i] = 0
@@ -1211,10 +1354,10 @@ for (i in c(1:60, 91:150)){
 for (i in 1:length(sol_chimique$C.org)){ # Pour tous les relevés
   for (l in 1:30){
     for (k in levels(sol_chimique_cor$Code_site)){
-    if (sol_chimique_cor$Parcelle[i] == l & sol_chimique_cor$Code_site[i] == k)
-    {
-      sol_chimique_cor$init[i] = matrice_init[l,match(k,levels(sol_chimique_cor$Code_site))]
-    }
+      if (sol_chimique_cor$Parcelle[i] == l & sol_chimique_cor$Code_site[i] == k)
+      {
+        sol_chimique_cor$init[i] = matrice_init[l,match(k,levels(sol_chimique_cor$Code_site))]
+      }
     }
   }}
 
@@ -1223,20 +1366,20 @@ sol_chimique_cor$diff = sol_chimique_cor$C.org - sol_chimique_cor$init
 ##
 
 for (i in 1:length(sol_chimique_cor[,1])){
-
-sol_chimique_cor$ratio[i] = (sol_chimique_cor$C.org[i] / sol_chimique_cor$init[i] ) }
+  
+  sol_chimique_cor$ratio[i] = (sol_chimique_cor$C.org[i] / sol_chimique_cor$init[i] ) }
 
 
 
 sp = ggscatter(sol_chimique, x = "traitement", y = "C.org", color = "Code_site", 
                palette = "lancet",  add = "reg.line",        # Color by groups "cyl"
-          size = 1, alpha = 0.7, conf.int = TRUE   ,   facet.by = "traitement",                    # Change point shape by groups "cyl"
-           ellipse = F, 
-          fill = "Code_site", cor.coef = T, ellipse.type = "norm"
+               size = 1, alpha = 0.7, conf.int = TRUE   ,   facet.by = "traitement",                    # Change point shape by groups "cyl"
+               ellipse = F, 
+               fill = "Code_site", cor.coef = T, ellipse.type = "norm"
 )
 
 sp
-  stat_cor(aes(color = Code_site), label.x = 2)  
+stat_cor(aes(color = Code_site), label.x = 2)  
 
 sp
 
@@ -1271,10 +1414,10 @@ plot_grid(xplot, NULL, sp, yplot, ncol = 2, align = "h",
 
 fm8 <- lmer(log(N.tot) ~  Code_site  * traitement  +
               (1  | Date_prelevement),
-             sol_chimique, REML = T)
+            sol_chimique, REML = T)
 
 fm7= lme(log(N.tot) ~ Code_site * traitement,
-          random =~ 1 | Date_prelevement, data = sol_chimique)
+         random =~ 1 | Date_prelevement, data = sol_chimique)
 
 
 summary(fm7)
@@ -1304,14 +1447,14 @@ cor = ranef(fm8)
 MAPE(fitted(fm8), sol_chimique$N.tot)
 
 rt = lmer(pH ~ traitement * Code_site +
-       (Date_prelevement | Parcelle), data=sol_chimique)
+            (Date_prelevement | Parcelle), data=sol_chimique)
 r.squaredGLMM(fit1.lme)
 
 
 xyplot(C.org  ~  factor(Date_prelevement) | traitement, 
        data = sol_chimique_SIC,grid = TRUE, type = c("p","smooth"), layout = c(1,1),
        index.cond = function(x, y) coef(lm(y ~ x))[1], auto.key =  T)
-       
+
 plot(rt)
 
 confint(rt)
@@ -1326,13 +1469,13 @@ sol_chimique_LYC$pred = predict(fm8)
 
 p <- ggplot(sol_chimique_SIC, aes(x= Date_prelevement, y=CEC, fill=traitement)) +
   geom_boxplot()+
- scale_size_manual(name="Predictions", values=c("Subjects"=0.5, "Population"=3)) +
+  scale_size_manual(name="Predictions", values=c("Subjects"=0.5, "Population"=3)) +
   theme_bw(base_size=22) 
 p
 
 
 q <- ggplot(sol_chimique, aes(x= Date_prelevement, y=pred, 
-                                  fill=traitement)) +
+                              fill=traitement)) +
   geom_line(aes( y = pred, group = traitement, 
                  col = traitement), lwd = 1.1)+
   geom_point(aes( y = pred, group = traitement))+
@@ -1356,10 +1499,10 @@ factor = 4:8
 
 for (i in levels(sol_chimique_LYC$traitement)){
   for (j in levels(sol_chimique_LYC$traitement)){
-  a = mean(dist(rbind(sol_chimique_LYC[sol_chimique_LYC$traitement == i ,factor] , 
-                    sol_chimique_LYC[sol_chimique_LYC$traitement == j ,factor] )))
-  distance[match(i, levels(sol_chimique_LYC$traitement)),
-           match(j, levels(sol_chimique_LYC$traitement))] = a 
+    a = mean(dist(rbind(sol_chimique_LYC[sol_chimique_LYC$traitement == i ,factor] , 
+                        sol_chimique_LYC[sol_chimique_LYC$traitement == j ,factor] )))
+    distance[match(i, levels(sol_chimique_LYC$traitement)),
+             match(j, levels(sol_chimique_LYC$traitement))] = a 
   }
 }
 
@@ -1368,7 +1511,7 @@ plot(hclust(as.dist(distance)))
 for (i in levels(sol_chimique_SIC$traitement)){
   for (j in levels(sol_chimique_SIC$traitement)){
     a = mean(dist(rbind(sol_chimique_SIC[sol_chimique_SIC$traitement == i ,factor] , 
-                   sol_chimique_SIC[sol_chimique_SIC$traitement == j ,factor] )))
+                        sol_chimique_SIC[sol_chimique_SIC$traitement == j ,factor] )))
     distance[match(i, levels(sol_chimique_SIC$traitement)),
              match(j, levels(sol_chimique_SIC$traitement))] = a 
   }
@@ -1426,7 +1569,7 @@ fviz_dend(hc, k = 4,                 # Cut in four groups
           k_colors = "jco",
           color_labels_by_k = F,  # color labels by groups
           ggtheme = theme_bw(), rect = T     # Change theme
-, horiz = T)
+          , horiz = T)
 
 plot(hc)
 
@@ -1439,33 +1582,33 @@ for (i in 1:9){
 }
 
 distance2 = cbind(
-            c(distance[2:10,1],
-              distance[3:10,2],
-              distance[4:10,3],
-              distance[5:10,4],
-              distance[6:10,5],
-              distance[7:10,6],
-              distance[8:10,7],
-              distance[9:10,8],
-              distance[10,9]),
-            c("2","3","4","5","6","7","8","9","10",
-              "3","4","5","6","7","8","9","10",
-              "4","5","6","7","8","9","10",
-              "5","6","7","8","9","10",
-              "6","7","8","9","10",
-              "7","8","9","10",
-              "8","9","10",
-              "9","10",
-              "10"),
-            c("1","1","1","1","1","1","1","1","1",
-              "2","2","2","2","2","2","2","2",
-              "3","3","3","3","3","3","3",
-              "4","4","4","4","4","4",
-              "5","5","5","5","5",
-              "6","6","6","6",
-              "7","7","7",
-              "8","8",
-              "9"))
+  c(distance[2:10,1],
+    distance[3:10,2],
+    distance[4:10,3],
+    distance[5:10,4],
+    distance[6:10,5],
+    distance[7:10,6],
+    distance[8:10,7],
+    distance[9:10,8],
+    distance[10,9]),
+  c("2","3","4","5","6","7","8","9","10",
+    "3","4","5","6","7","8","9","10",
+    "4","5","6","7","8","9","10",
+    "5","6","7","8","9","10",
+    "6","7","8","9","10",
+    "7","8","9","10",
+    "8","9","10",
+    "9","10",
+    "10"),
+  c("1","1","1","1","1","1","1","1","1",
+    "2","2","2","2","2","2","2","2",
+    "3","3","3","3","3","3","3",
+    "4","4","4","4","4","4",
+    "5","5","5","5","5",
+    "6","6","6","6",
+    "7","7","7",
+    "8","8",
+    "9"))
 
 
 c = list()
@@ -1473,7 +1616,7 @@ c = list()
 c$merge = matrix(c(distance2), nc = 10, byrow = T)
 colnames(distance2) = c("Weight", "source", "target")
 
-  a <- list()  # initialize empty object
+a <- list()  # initialize empty object
 # define merging pattern: 
 #    negative numbers are leaves, 
 #    positive are merged clusters (defined by row number in $merge)
