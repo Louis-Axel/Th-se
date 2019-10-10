@@ -1,0 +1,65 @@
+  #### Load Library
+  
+  library(lubridate)
+  library(plyr)
+  library(nlme)
+  library(lme4)
+  library(lattice)
+  library(ggplot2)
+  library(sf)
+  library(predictmeans)
+  library(sme)
+  library(influence.ME)
+  library(corrplot)
+  library(rccdates)
+  library(Metrics)
+  library(agricolae)
+  library(ape)
+  library(predictmeans)
+  library(emmeans)
+  library(multcomp)
+  library(broom)
+  library(tidyverse)
+  library(ggpubr)
+  library(afex)
+  library(MLmetrics)
+  library(devtools)
+  library(ggbiplot)
+  library(FactoMineR)
+  library(factoextra)
+  library(ggpubr)
+  library(ggExtra)
+  library(cowplot)
+  library(klaR)
+  library(factoextra)
+  library(vegan)
+  library(usedist)
+  library(readr)
+  library(RColorBrewer)
+  library(ggthemes)
+  library(kml)
+  library(mclust)
+  library(fpc)
+  library(mgcv)
+  library(brms)
+  library(ggpmisc)
+  
+  setwd("C:/Users/Louis-Axel/Documents/")
+  
+  sol_chimique = read.csv("DATAFRAME_sol_chimique.csv", sep =",")
+  sol_chimique_new = read.csv("DATAFRAME_sol_chimique_new.csv", sep = ",")
+  
+  sol_chimique_LYC = sol_chimique[sol_chimique$Code_site == "0-LYC",]
+  sol_chimique_SIC = sol_chimique[sol_chimique$Code_site == "1-SIC",]
+  sol_chimique_MAR = sol_chimique[sol_chimique$Code_site == "3-MAR",]
+  sol_chimique_SED = sol_chimique[sol_chimique$Code_site == "2-SED",]
+  
+  sol_chimique_LYC_new = sol_chimique_new[sol_chimique_new$Code_site == "0-LYC",]
+  sol_chimique_SIC_new = sol_chimique_new[sol_chimique_new$Code_site == "1-SIC",]
+  sol_chimique_MAR_new = sol_chimique_new[sol_chimique_new$Code_site == "3-MAR",]
+  sol_chimique_SED_new = sol_chimique_new[sol_chimique_new$Code_site == "2-SED",]
+  
+  data_frame_LYC = read.csv("data_frame_corgNC_LYC.csv")
+  data_frame_SIC = read.csv("data_frame_corgNC_SIC.csv")
+  data_frame_SED = read.csv("data_frame_corgNC_SED.csv")
+  data_frame_MAR = read.csv("data_frame_corgNC_MAR.csv")
